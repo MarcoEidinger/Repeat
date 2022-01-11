@@ -1,5 +1,6 @@
 import ArgumentParser
 
+@main
 struct Repeat: ParsableCommand {
     @Option(help: "The number of times to repeat 'phrase'.")
     var count: Int?
@@ -22,5 +23,3 @@ struct Repeat: ParsableCommand {
         }
     }
 }
-
-Repeat.main()
