@@ -1,19 +1,51 @@
 import ArgumentParser
 
-@main
-struct Repeat: ParsableCommand {
-    @Option(help: "The number of times to repeat 'phrase'.")
-    var count: Int?
+protocol AsyncParsableCommand: ParsableCommand {
+    mutating func runAsync() async throws
+}
 
+extension ParsableCommand {
+    static func main() async {
+        do {
+            var command = try parseAsRoot(nil) /// `parseAsRoot` uses the program's command-line arguments when passing `nil`
+            if var asyncCommand = command as? AsyncParsableCommand {
+                try await asyncCommand.runAsync()
+            } else {
+                try command.run()
+            }
+        } catch {
+            exit(withError: error)
+        }
+    }
+}
+
+@main
+enum CLI {
+    static func main() async {
+        await Repeat.main()
+    }
+}
+
+
+struct Repeat: ParsableCommand, AsyncParsableCommand {
     @Flag(help: "Include a counter with each repetition.")
     var includeCounter = false
+
+    @Option(name: .shortAndLong, help: "The number of times to repeat 'phrase'.")
+    var count: Int?
 
     @Argument(help: "The phrase to repeat.")
     var phrase: String
 
-    mutating func run() throws {
+    mutating func runAsync() async throws {
         let repeatCount = count ?? .max
+        await asyncRepeat(phrase: phrase, repeatCount: repeatCount)
+    }
 
+
+
+    func asyncRepeat(phrase: String, repeatCount: Int) async {
+        try? await Task.sleep(nanoseconds: 5 * 1_000_000_000) // dummy use of an aysnc operation .. wait 5 seconds :)
         for i in 1...repeatCount {
             if includeCounter {
                 print("\(i): \(phrase)")

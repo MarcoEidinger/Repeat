@@ -5,6 +5,7 @@ import PackageDescription
 
 let package = Package(
     name: "RepeatCommandLineTool",
+    platforms: [.macOS(.v10_15)],
     products: [
         .executable(name: "repeat", targets: ["RepeatCommandLineTool"]),
     ],
