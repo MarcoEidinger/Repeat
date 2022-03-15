@@ -1,32 +1,6 @@
 import ArgumentParser
 
-protocol AsyncParsableCommand: ParsableCommand {
-    mutating func runAsync() async throws
-}
-
-extension ParsableCommand {
-    static func main() async {
-        do {
-            var command = try parseAsRoot(nil) /// `parseAsRoot` uses the program's command-line arguments when passing `nil`
-            if var asyncCommand = command as? AsyncParsableCommand {
-                try await asyncCommand.runAsync()
-            } else {
-                try command.run()
-            }
-        } catch {
-            exit(withError: error)
-        }
-    }
-}
-
 @main
-enum CLI {
-    static func main() async {
-        await Repeat.main()
-    }
-}
-
-
 struct Repeat: ParsableCommand, AsyncParsableCommand {
     @Flag(help: "Include a counter with each repetition.")
     var includeCounter = false
@@ -37,7 +11,7 @@ struct Repeat: ParsableCommand, AsyncParsableCommand {
     @Argument(help: "The phrase to repeat.")
     var phrase: String
 
-    mutating func runAsync() async throws {
+    mutating func run() async throws {
         let repeatCount = count ?? .max
         await asyncRepeat(phrase: phrase, repeatCount: repeatCount)
     }
